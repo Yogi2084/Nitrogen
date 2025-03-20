@@ -45,6 +45,18 @@ return Context.json(
   },200
 )
 })
+//1.3 get all customers
+
+hono.get("/customer",async(context)=>{
+const customer=await prisma.customer.findMany()
+
+return context.json(
+  {
+  customer
+  },200)
+
+
+})
 
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
