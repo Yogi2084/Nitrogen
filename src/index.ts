@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import {  Hono } from 'hono'
 import { PrismaClient } from '@prisma/client'
 
 const prisma= new PrismaClient
@@ -27,7 +27,24 @@ return Context.json(
 )
 })
 
+//1.2 get customer using customerId
 
+hono.get("customer/:customerId",async(Context)=>{
+
+  const {customerId}= await Context.req.param();
+  const customer= await prisma.customer.findUnique({
+    where:{
+      id:Number(customerId),
+
+    }
+  })
+
+return Context.json(
+  {
+    customer
+  },200
+)
+})
 
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
