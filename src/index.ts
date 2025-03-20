@@ -107,5 +107,11 @@ return context.json(
 
 })
 
+// 3. Menu Items
+
+// 3.1 Add a menu item to a restaurant using MenuItemId
+
+
+
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
