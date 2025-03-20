@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -32,14 +31,14 @@ model MenuItem {
   price        Decimal
   isAvailable  Boolean     @default(true)
   orderItems   OrderItem[]
-  Restaurant Restaurant @relation(fields: [restaurantId],references: [id])
+  Restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
 }
 
 model Order {
   id           Int        @id
   customerId   Int
   restaurantId Int
-  status       Status
+  status       Status     @default(PLACED)
   totalPrice   Decimal
   orderTime    DateTime   @default(now())
   Customer     Customer   @relation(fields: [customerId], references: [id])

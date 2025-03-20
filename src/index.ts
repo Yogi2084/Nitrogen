@@ -1,15 +1,33 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { PrismaClient } from '@prisma/client'
 
-const app = new Hono()
+const prisma= new PrismaClient
+const hono = new Hono()
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
+//1. customer
+
+//1.1 create customer
+
+hono.post("/customer",async(Context)=>{
+const {id,name,email,phoneNumber,address}= await Context.req.json();
+const customer= await prisma.customer.create({
+  data: {
+    id,
+    name,
+    email,
+    phoneNumber,
+    address,
+  },
+});
+return Context.json(
+{
+  customer
+},200
+)
 })
 
-serve({
-  fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+
+
+serve(hono);
+console.log(`Server is running on http://localhost:${3000}`)
