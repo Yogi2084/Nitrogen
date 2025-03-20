@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server'
-import {  Hono } from 'hono'
+import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client'
 
 const prisma= new PrismaClient
@@ -95,7 +95,17 @@ return context.json(
 },200)
 })
 
+//2.3 get all restaurant
 
+hono.get("/restaurant",async(context)=>{
+const restaurant= await prisma.restaurant.findMany();
+return context.json(
+  {
+    restaurant
+  },200)
+
+
+})
 
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
