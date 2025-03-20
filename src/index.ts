@@ -58,5 +58,27 @@ return context.json(
 
 })
 
+//2  Restaurants
+
+//2.1 create restaurant
+
+hono.post("/restaurant",async(context)=>{
+  const{name,location}=await context.req.json();
+  const restaurant=await prisma.restaurant.create({
+    data:{
+      name,
+      location
+    }
+  })
+return context.json(
+{
+  restaurant
+}
+,200)
+
+})
+
+
+
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
