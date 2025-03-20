@@ -9,10 +9,54 @@ datasource db {
 }
 
 model Customer {
-  id        Int @id
-  name      String
-  email     String @unique
-  phoneNumber String @unique
-  address   String
+  id          Int     @id
+  name        String
+  email       String  @unique
+  phoneNumber String  @unique
+  address     String
+  orders      Order[]
+}
 
+model Restaurant {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  location  String
+  menuitems MenuItem[]
+  orders    Order[]
+}
+
+model MenuItem {
+  id           Int         @id @default(autoincrement())
+  restaurantId Int
+  namE         String
+  price        Decimal
+  isAvailable  Boolean     @default(true)
+  orderItems   OrderItem[]
+  Restaurant Restaurant @relation(fields: [restaurantId],references: [id])
+}
+
+model Order {
+  id           Int        @id
+  customerId   Int
+  restaurantId Int
+  status       Status
+  totalPrice   Decimal
+  orderTime    DateTime   @default(now())
+  Customer     Customer   @relation(fields: [customerId], references: [id])
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model OrderItem {
+  id         Int      @id
+  orderId    Int
+  menuItemId Int
+  quantity   Int
+  MenuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+enum Status {
+  PLACED
+  PREPARING
+  COMPLETED
+  CANCELLED
 }
