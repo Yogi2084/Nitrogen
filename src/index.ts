@@ -78,6 +78,23 @@ return context.json(
 
 })
 
+//2.2 get restaurant using restaurantId
+
+hono.get("/restaurant/:restaurantId",async(context)=>{
+  const{restaurantId}=await context.req.param();
+  const restaurant=await prisma.restaurant.findUnique(
+    {
+      where:{
+        id:Number(restaurantId)
+      }
+    })
+return context.json(
+  {
+    restaurant
+
+},200)
+})
+
 
 
 serve(hono);
