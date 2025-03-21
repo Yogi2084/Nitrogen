@@ -269,13 +269,40 @@ hono.post("/orders", async (context) => {
 // 4.2 Retrieve details of a specific order
 hono.get("/orders/:id", async (c) => {
   const {id} = c.req.param();
-
+try {
   const order = await prisma.order.findUnique({
     where: {
       id: Number(id),
     }
   });
+  
   return c.json(order)
+}
+catch (error) { 
+  console.error("Error finding order", error);
+    
+}
 })
+
+//4.3 patch order status using orderId
+hono.patch("/orders/:id/status", async (c) => {
+  const {id} = c.req.param();
+  const {status} = await c.req.json();
+  try{
+  const order = await prisma.order.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      status: status,
+    },
+  });
+  return c.json(order)}
+  catch(error){
+    return c.json({ message: "Error finding order" }, 404);
+  }
+})
+
+
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`);
