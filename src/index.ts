@@ -111,7 +111,7 @@ return context.json(
 
 // 3.1 Add a menu item to a restaurant using MenuItemId
 
-hono.post("/restaurant/:id/menu", async (context) => {
+hono.post("/restaurant/:id/menuItem", async (context) => {
   const { id } = context.req.param();
   const { name, price } = await context.req.json();
   try {
@@ -138,5 +138,35 @@ hono.post("/restaurant/:id/menu", async (context) => {
     return context.json({ message: "Error finding restaurant" }, 404);
   }
 });
+
+
+// 3.2  Update availability or price of a menu item using Id
+hono.patch("/menuItem/:id", async (c) => {
+  const { id } = c.req.param();
+  const { isAvailable, price } = await c.req.json();
+
+  try {
+    const existingMenuItem = await prisma.menuItem.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingMenuItem) {
+      return c.json({ message: "Menu item not found" }, 404);
+    }
+
+    const updatedMenuItem = await prisma.menuItem.update({
+      where: { id: Number(id) },
+      data: {
+        isAvailable: isAvailable,
+        price: price,
+      },
+    });
+
+    return c.json({ menuItem: updatedMenuItem }, 200);
+  } catch (error) {
+    return c.json({ message: "Failed to update menu item" }, 500);
+  }
+});
+
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
