@@ -168,5 +168,32 @@ hono.patch("/menuItem/:id", async (c) => {
   }
 });
 
+// 3.3 Get all menu items for a restaurant using restaurantId
+
+hono.get("/restaurant/:id/menuItem", async (c) => {
+  const { id } = c.req.param();
+  try {
+    const isExist = await prisma.restaurant.findUnique({
+      where: { id: Number(id) },
+    })
+
+    if (!isExist) {
+      return c.json({ message: "Restaurant not found" }, 404);
+    } 
+
+    const menuItems = await prisma.menuItem.findMany({
+      where: { restaurantId: Number(id) },
+    });
+    return c.json(
+      { 
+        menuItems 
+      }, 200);
+
+  }
+   catch (error) {
+    return c.json({ message: "Failed to fetch menu items" }, 500);
+  }
+})
+
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
