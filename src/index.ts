@@ -351,5 +351,25 @@ hono.get("/restaurant/:id/revenue", async (c) => {
   }
 });
 
+// 5.2 Retrieve the most ordered menu item across all restaurants
+
+hono.get("/menuItem/mostOrdered", async (c) => {
+  
+  try {
+    const mostOrderedMenuItem = await prisma.menuItem.findMany({
+      orderBy: {
+        orderItems: {
+          _count: "desc",
+        },
+      },
+      include: {
+        orderItems: true,
+      },
+    });
+    return c.json(mostOrderedMenuItem)
+  } catch (error) {
+    return c.json({ message: "Failed to fetch menu items" }, 500);
+  }
+})
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`);
