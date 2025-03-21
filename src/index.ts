@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import {  Hono } from 'hono'
 import { PrismaClient } from '@prisma/client'
 
 const prisma= new PrismaClient
@@ -111,7 +111,32 @@ return context.json(
 
 // 3.1 Add a menu item to a restaurant using MenuItemId
 
+hono.post("/restaurant/:id/menu", async (context) => {
+  const { id } = context.req.param();
+  const { name, price } = await context.req.json();
+  try {
+    const existRestaurant = await prisma.restaurant.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
+    if (!existRestaurant) {
+      return context.json({ message: "Restaurant not found" }, 404);
+    }
 
+    const menu = await prisma.menuItem.create({
+      data: {
+        name: name,
+        price: price,
+        restaurantId: Number(id),
+      },
+    });
 
+    return context.json(menu, 201);
+  } catch (error) {
+    console.error("Error finding restaurant", error);
+    return context.json({ message: "Error finding restaurant" }, 404);
+  }
+});
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`)
