@@ -35,18 +35,18 @@ model MenuItem {
 }
 
 model Order {
-  id           Int        @id@default(autoincrement())
+  id           Int        @id @default(autoincrement())
   customerId   Int
   restaurantId Int
   status       Status     @default(PLACED)
-  totalPrice   Decimal
+  totalPrice   Float
   orderTime    DateTime   @default(now())
   Customer     Customer   @relation(fields: [customerId], references: [id])
   Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 }
 
 model OrderItem {
-  id         Int      @id@default(autoincrement())
+  id         Int      @id  @default(autoincrement())
   orderId    Int
   menuItemId Int
   quantity   Int

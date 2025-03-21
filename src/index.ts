@@ -266,8 +266,16 @@ hono.post("/orders", async (context) => {
   }
 });
 
-// Retrieve details of a specific order
+// 4.2 Retrieve details of a specific order
+hono.get("/orders/:id", async (c) => {
+  const {id} = c.req.param();
 
-
+  const order = await prisma.order.findUnique({
+    where: {
+      id: Number(id),
+    }
+  });
+  return c.json(order)
+})
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`);
