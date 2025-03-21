@@ -1,111 +1,111 @@
-import { serve } from '@hono/node-server'
-import {  Hono } from 'hono'
-import { PrismaClient } from '@prisma/client'
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { PrismaClient } from "@prisma/client";
 
-const prisma= new PrismaClient
-const hono = new Hono()
+const prisma = new PrismaClient();
+const hono = new Hono();
 
 //1. customer
 
 //1.1 create customer
 
-hono.post("/customer",async(Context)=>{
-const {id,name,email,phoneNumber,address}= await Context.req.json();
-const customer= await prisma.customer.create({
-  data: {
-    id,
-    name,
-    email,
-    phoneNumber,
-    address,
-  },
+hono.post("/customer", async (Context) => {
+  const { id, name, email, phoneNumber, address } = await Context.req.json();
+  const customer = await prisma.customer.create({
+    data: {
+      id,
+      name,
+      email,
+      phoneNumber,
+      address,
+    },
+  });
+  return Context.json(
+    {
+      customer,
+    },
+    200
+  );
 });
-return Context.json(
-{
-  customer
-},200
-)
-})
 
 //1.2 get customer using customerId
 
-hono.get("customer/:customerId",async(Context)=>{
+hono.get("customer/:customerId", async (Context) => {
+  const { customerId } = await Context.req.param();
+  const customer = await prisma.customer.findUnique({
+    where: {
+      id: Number(customerId),
+    },
+  });
 
-  const {customerId}= await Context.req.param();
-  const customer= await prisma.customer.findUnique({
-    where:{
-      id:Number(customerId),
-
-    }
-  })
-
-return Context.json(
-  {
-    customer
-  },200
-)
-})
+  return Context.json(
+    {
+      customer,
+    },
+    200
+  );
+});
 //1.3 get all customers
 
-hono.get("/customer",async(context)=>{
-const customer=await prisma.customer.findMany()
+hono.get("/customer", async (context) => {
+  const customer = await prisma.customer.findMany();
 
-return context.json(
-  {
-  customer
-  },200)
-
-
-})
+  return context.json(
+    {
+      customer,
+    },
+    200
+  );
+});
 
 //2  Restaurants
 
 //2.1 create restaurant
 
-hono.post("/restaurant",async(context)=>{
-  const{name,location}=await context.req.json();
-  const restaurant=await prisma.restaurant.create({
-    data:{
+hono.post("/restaurant", async (context) => {
+  const { name, location } = await context.req.json();
+  const restaurant = await prisma.restaurant.create({
+    data: {
       name,
-      location
-    }
-  })
-return context.json(
-{
-  restaurant
-}
-,200)
-
-})
+      location,
+    },
+  });
+  return context.json(
+    {
+      restaurant,
+    },
+    200
+  );
+});
 
 //2.2 get restaurant using restaurantId
 
-hono.get("/restaurant/:restaurantId",async(context)=>{
-  const{restaurantId}=await context.req.param();
-  const restaurant=await prisma.restaurant.findUnique(
+hono.get("/restaurant/:restaurantId", async (context) => {
+  const { restaurantId } = await context.req.param();
+  const restaurant = await prisma.restaurant.findUnique({
+    where: {
+      id: Number(restaurantId),
+    },
+  });
+  return context.json(
     {
-      where:{
-        id:Number(restaurantId)
-      }
-    })
-return context.json(
-  {
-    restaurant
-
-},200)
-})
+      restaurant,
+    },
+    200
+  );
+});
 
 //2.3 get all restaurant
 
-hono.get("/restaurant",async(context)=>{
-const restaurant= await prisma.restaurant.findMany();
-return context.json(
-  {
-    restaurant
-  },200)
-
-
-})
+hono.get("/restaurant", async (context) => {
+  const restaurant = await prisma.restaurant.findMany();
+  return context.json(
+    {
+      restaurant,
+    },
+    200
+  );
+});
 
 // 3. Menu Items
 
@@ -135,10 +135,9 @@ hono.post("/restaurant/:id/menuItem", async (context) => {
     return context.json(menu, 201);
   } catch (error) {
     console.error("Error finding restaurant", error);
-    return context.json({ message: "Error finding restaurant" }, 404);
-  }
+    return context.json({ message: "Error finding restaurant" }, 404);
+  }
 });
-
 
 // 3.2  Update availability or price of a menu item using Id
 hono.patch("/menuItem/:id", async (c) => {
@@ -175,25 +174,100 @@ hono.get("/restaurant/:id/menuItem", async (c) => {
   try {
     const isExist = await prisma.restaurant.findUnique({
       where: { id: Number(id) },
-    })
+    });
 
     if (!isExist) {
       return c.json({ message: "Restaurant not found" }, 404);
-    } 
+    }
 
     const menuItems = await prisma.menuItem.findMany({
       where: { restaurantId: Number(id) },
     });
     return c.json(
-      { 
-        menuItems 
-      }, 200);
-
-  }
-   catch (error) {
+      {
+        menuItems,
+      },
+      200
+    );
+  } catch (error) {
     return c.json({ message: "Failed to fetch menu items" }, 500);
   }
-})
+});
+
+// 4. Orders
+
+// 4.1  Place an order (includes items and quantities)
+hono.post("/orders", async (context) => {
+  const { customerId, restaurantId, items } = await context.req.json();
+
+  if (!customerId || !restaurantId || !items || !Array.isArray(items) || items.length === 0) {
+    return context.json({message:"All fields (customerId, restaurantId, items) are required and items should be a non-empty array"}, 400);
+  }
+
+  try {
+        const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+
+    if (!customer) {
+      return context.json({ message: "Customer does not exist" }, 400);
+    }
+    if (!restaurant) {
+      return context.json({ message: "Restaurant does not exist" }, 400);
+    }
+
+    const order = await prisma.order.create({
+      data: { customerId, restaurantId, totalPrice: 0 },
+    });
+    
+
+    let totalPrice = 0;
+
+    for (const item of items) {
+      const menuItem = await prisma.menuItem.findUnique({
+        where: { id: item.menuItemId },
+      });
+
+      if (!menuItem || !menuItem.isAvailable) {
+        return context.json(
+          {
+            message: `Menu item ID ${item.menuItemId} not found or unavailable`,
+          },
+          400
+        );
+      }
+
+      const itemTotal = Number(menuItem.price) * item.quantity;
+      totalPrice += itemTotal;
+
+      
+      await prisma.orderItem.create({
+        data: {
+          orderId: order.id,
+          menuItemId: menuItem.id,
+          quantity: item.quantity,
+        },
+      });
+    }
+    const updatedOrder = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        totalPrice: totalPrice,
+      },
+    });
+
+    return context.json({ message: updatedOrder }, 201);
+  } catch (error) {
+    console.error("Error placing order:", error);
+    return context.json({ message: "Failed to place order" }, 500);
+  }
+});
+
+// Retrieve details of a specific order
+
 
 serve(hono);
-console.log(`Server is running on http://localhost:${3000}`)
+console.log(`Server is running on http://localhost:${3000}`);

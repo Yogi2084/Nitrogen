@@ -35,7 +35,7 @@ model MenuItem {
 }
 
 model Order {
-  id           Int        @id
+  id           Int        @id@default(autoincrement())
   customerId   Int
   restaurantId Int
   status       Status     @default(PLACED)
@@ -46,7 +46,7 @@ model Order {
 }
 
 model OrderItem {
-  id         Int      @id
+  id         Int      @id@default(autoincrement())
   orderId    Int
   menuItemId Int
   quantity   Int
