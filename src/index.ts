@@ -9,7 +9,8 @@ const hono = new Hono();
 
 //1.1 create customer
 
-hono.post("/customer", async (Context) => {
+hono.post("/customer", async (Context) => { 
+  try{
   const { id, name, email, phoneNumber, address } = await Context.req.json();
   const customer = await prisma.customer.create({
     data: {
@@ -26,11 +27,17 @@ hono.post("/customer", async (Context) => {
     },
     200
   );
+}
+
+  catch (error) {
+    console.error("Error in creating customer", error);
+  }
 });
 
 //1.2 get customer using customerId
 
 hono.get("customer/:customerId", async (Context) => {
+  try{
   const { customerId } = await Context.req.param();
   const customer = await prisma.customer.findUnique({
     where: {
@@ -44,10 +51,16 @@ hono.get("customer/:customerId", async (Context) => {
     },
     200
   );
+}
+catch (error) {
+  console.error("Error finding customer", error);
+}
 });
+
 //1.3 get all customers
 
 hono.get("/customer", async (context) => {
+  try {
   const customer = await prisma.customer.findMany();
 
   return context.json(
@@ -56,10 +69,15 @@ hono.get("/customer", async (context) => {
     },
     200
   );
+}
+catch (error) {
+  console.error("Error finding customers", error);
+}
 });
 //1.3 get all orders for a customer using customerId
 
 hono.get("/customer/:customerId/orders", async (context) => {
+  try{
   const { customerId } = await context.req.param();
   const orders = await prisma.order.findMany({
     where: {
@@ -72,6 +90,12 @@ hono.get("/customer/:customerId/orders", async (context) => {
     },
     200
   );
+}
+catch (error) {
+  console.error("Error finding customer", error);
+}
+
+
 });
 
 //2  Restaurants
@@ -79,6 +103,7 @@ hono.get("/customer/:customerId/orders", async (context) => {
 //2.1 create restaurant
 
 hono.post("/restaurant", async (context) => {
+  try{
   const { name, location } = await context.req.json();
   const restaurant = await prisma.restaurant.create({
     data: {
@@ -92,11 +117,16 @@ hono.post("/restaurant", async (context) => {
     },
     200
   );
+}
+catch (error) {
+  console.error("Error in creating restaurant", error);
+}
 });
 
 //2.2 get restaurant using restaurantId
 
 hono.get("/restaurant/:restaurantId", async (context) => {
+  try{
   const { restaurantId } = await context.req.param();
   const restaurant = await prisma.restaurant.findUnique({
     where: {
@@ -109,11 +139,17 @@ hono.get("/restaurant/:restaurantId", async (context) => {
     },
     200
   );
+}
+catch (error) {
+  console.error("Error finding restaurant", error);
+}
 });
 
 //2.3 get all restaurant
 
 hono.get("/restaurant", async (context) => {
+  try{
+
   const restaurant = await prisma.restaurant.findMany();
   return context.json(
     {
@@ -121,6 +157,10 @@ hono.get("/restaurant", async (context) => {
     },
     200
   );
+}
+catch (error) {
+  console.error("Error finding  restaurant", error);
+}
 });
 
 // 3. Menu Items
