@@ -57,6 +57,22 @@ hono.get("/customer", async (context) => {
     200
   );
 });
+//1.3 get all orders for a customer using customerId
+
+hono.get("/customer/:customerId/orders", async (context) => {
+  const { customerId } = await context.req.param();
+  const orders = await prisma.order.findMany({
+    where: {
+      customerId: Number(customerId),
+    },
+  });
+  return context.json(
+    {
+      orders,
+    },
+    200
+  );
+});
 
 //2  Restaurants
 
