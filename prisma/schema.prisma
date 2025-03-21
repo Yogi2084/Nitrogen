@@ -41,6 +41,7 @@ model Order {
   status       Status     @default(PLACED)
   totalPrice   Float
   orderTime    DateTime   @default(now())
+  orderItem  OrderItem[]
   Customer     Customer   @relation(fields: [customerId], references: [id])
   Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 }
@@ -51,6 +52,7 @@ model OrderItem {
   menuItemId Int
   quantity   Int
   MenuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  order      Order  @relation(fields: [orderId], references: [id])
 }
 
 enum Status {

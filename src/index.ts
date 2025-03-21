@@ -365,11 +365,47 @@ hono.get("/menuItem/mostOrdered", async (c) => {
       include: {
         orderItems: true,
       },
+      take: 1,
     });
     return c.json(mostOrderedMenuItem)
   } catch (error) {
     return c.json({ message: "Failed to fetch menu items" }, 500);
   }
 })
+
+// 5.3 Retrieve the top 5 customers   based on number of orders placed
+
+hono.get("/customers/:id/orders", async (context) => {
+  const id = context.req.param("id");
+  try {
+    const customer = await prisma.customer.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!customer) {
+      return context.json({ message: "Customer not found" }, 404);
+    }
+
+    const orders = await prisma.order.findMany({
+      where: { customerId: Number(id) },
+      include: {
+        Restaurant: true,
+        orderItem: {
+          include: {
+            MenuItem: true,
+          },
+        },
+      },
+    });
+
+    return context.json(orders, 200);
+  } catch (error) {
+    console.error("Error retrieving orders", error);
+    return context.json({ message: "Error retrieving orders" }, 500);
+  }
+});
+
+
+
 serve(hono);
 console.log(`Server is running on http://localhost:${3000}`);
